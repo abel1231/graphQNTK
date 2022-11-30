@@ -2,7 +2,7 @@ import math
 import numpy as np
 import scipy as sp
 
-class GNTK(object):
+class KernelMatrix(object):
     """
     implement the Graph Neural Tangent Kernel
     """
@@ -152,9 +152,9 @@ class GNTK(object):
                 nngp = self.__adj_diag_nngp(nngp, adj_block, N, scale_mat)
         return diag_list, diag_nngp_list, nngp_xx_list
 
-    def gntk(self, g1, g2, diag_list1, diag_list2, A1, A2, diag_list1_nngp, diag_list2_nngp, nngp_xx_list1, nngp_xx_list2):
+    def kernel(self, g1, g2, diag_list1, diag_list2, A1, A2, diag_list1_nngp, diag_list2_nngp, nngp_xx_list1, nngp_xx_list2):
         """
-        compute the GNTK value \Theta(g1, g2)
+        compute the kernel value \Theta(g1, g2)
         g1: graph1
         g2: graph2
         diag_list1, diag_list2: g1, g2's the diagonal elements of covariance matrix in all layers
@@ -201,10 +201,7 @@ class GNTK(object):
                 ntk = self.__adj(ntk, adj_block, n1, n2, scale_mat)  # compute sigma^{l+1}_{0} and ntk^{l+1}_{0}
 
                 nngp = self.__adj_nngp(nngp, adj_block, n1, n2, scale_mat)
-        # if self.jk:
-        #     return np.sum(jump_ntk) * 2
-        # else:
-        #     return np.sum(ntk) * 2
+
 
         if self.jk:
             return np.sum(jump_ntk)

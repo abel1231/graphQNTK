@@ -4,8 +4,6 @@ import statistics
 import numpy as np
 import networkx as nx
 
-
-
 class S2VGraph(object):
     def __init__(self, g, label, node_tags=None, node_features=None):
         '''

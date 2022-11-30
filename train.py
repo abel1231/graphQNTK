@@ -6,9 +6,9 @@ from os.path import join
 import argparse
 import os
 from multiprocessing import Pool
-from gntk import GNTK
+from kernel import KernelMatrix
 
-parser = argparse.ArgumentParser(description='GNTK computation')
+parser = argparse.ArgumentParser(description='description')
 # several folders, each folder one kernel
 parser.add_argument('--dataset', type=str, default="BZR",
                         help='name of dataset (default: COLLAB)')
@@ -55,7 +55,7 @@ if continuous:
         node_features = sc.transform(g.node_features)
         g.node_features = node_features / np.linalg.norm(node_features, axis=-1, keepdims=True).clip(min=1e-06)
 
-gntk = GNTK(num_layers=args.num_layers, num_mlp_layers=args.num_mlp_layers, jk=args.jk, scale=args.scale)
+kernel = KernelMatrix(num_layers=args.num_layers, num_mlp_layers=args.num_mlp_layers, jk=args.jk, scale=args.scale)
 A_list = []
 diag_list = []  # store the sqrt(diag(sigma^{l}_{r})) from l = 1 to L-1 and r = 0 to R-1.   len = num of graphs ||| len x[.] = (L-1)*R ||| shape x[.][.] = num of nodes of the graph
 diag_nngp_list = []
@@ -74,7 +74,7 @@ for i in range(len(graphs)): # traverse all graphs
 
     A_list.append(scipy.sparse.coo_matrix(([1] * len(edges), (row, col)), shape = (n, n), dtype = np.float32))
     A_list[-1] = A_list[-1] + A_list[-1].T + scipy.sparse.identity(n) # add self-loop and make it symmetric
-    diag, diag_nngp, nngp_xx= gntk.diag(graphs[i], A_list[i])
+    diag, diag_nngp, nngp_xx= kernel.diag(graphs[i], A_list[i])
     diag_list.append(diag)
     diag_nngp_list.append(diag_nngp)
     nngp_xx_list.append(nngp_xx)
@@ -82,7 +82,7 @@ for i in range(len(graphs)): # traverse all graphs
 
 
 def calc(T):
-    return gntk.gntk(graphs[T[0]], graphs[T[1]],
+    return kernel.kernel(graphs[T[0]], graphs[T[1]],
                      diag_list[T[0]], diag_list[T[1]],
                      A_list[T[0]], A_list[T[1]],
                      diag_nngp_list[T[0]], diag_nngp_list[T[1]],
